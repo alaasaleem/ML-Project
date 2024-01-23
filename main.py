@@ -4,42 +4,82 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, classification_report
 
 # Load the CSV file into a DataFrame
-dataFrame = pd.read_csv(r"StressLevelDataset.csv")
+dataFrame = pd.read_csv(r"smoking.csv")
+
+# Convert 'gender' column to numeric values (assuming 'F' becomes 0 and 'M' becomes 1)
+dataFrame['gender'] = dataFrame['gender'].map({'F': 0, 'M': 1})
+
+# Convert 'tartar' and 'oral' columns to numeric values (assuming 'N' becomes 0 and 'Y' becomes 1)
+dataFrame['tartar'] = dataFrame['tartar'].map({'N': 0, 'Y': 1})
+dataFrame['oral'] = dataFrame['oral'].map({'N': 0, 'Y': 1})
 
 # Extract features (X) and target variable (y)
-X = dataFrame[['self_esteem', 'sleep_quality', 'noise_level', 'living_conditions',
-               'academic_performance', 'study_load', 'teacher_student_relationship',
-               'future_career_concerns', 'social_support', 'peer_pressure',
-               'extracurricular_activities', 'bullying', 'stress_level']].values
+X = dataFrame[['ID', 'gender', 'age', 'height(cm)', 'weight(kg)', 'waist(cm)', 
+               'eyesight(left)', 'eyesight(right)', 'hearing(left)', 'hearing(right)', 
+               'systolic', 'relaxation', 'fasting blood sugar', 'Cholesterol', 
+               'triglyceride', 'HDL', 'LDL', 'hemoglobin', 'Urine protein', 
+               'serum creatinine', 'AST', 'ALT', 'Gtp', 'oral', 'dental caries', 'tartar']].values
 
-y = dataFrame['depression'].values
+y = dataFrame['smoking'].values
 
 # Split data into training set, validation set, and testing set
-X_main, X_test, y_main, y_test = train_test_split(X, y, test_size=220, shuffle=False)
-X_train, X_val, y_train, y_val = train_test_split(X_main, y_main, test_size=220, shuffle=False)
+X_main, X_test, y_main, y_test = train_test_split(X, y, test_size=11138, shuffle=False)
+X_train, X_val, y_train, y_val = train_test_split(X_main, y_main, test_size=11138, shuffle=False)
 
-# Define the KNN model with Euclidean distance and k=1
-knn_model_k1 = KNeighborsClassifier(n_neighbors=1, metric='euclidean')
-knn_model_k1.fit(X_train, y_train)
 
-# Make predictions on the validation set
-y_val_pred_k1 = knn_model_k1.predict(X_val)
+import matplotlib.pyplot as plt
+import numpy as np
 
-# Evaluate the performance for k=1
-accuracy_k1 = accuracy_score(y_val, y_val_pred_k1)
-print(f'Accuracy for k=1: {accuracy_k1}')
-print('Classification Report for k=1:')
-print(classification_report(y_val, y_val_pred_k1))
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay
 
-# Define the KNN model with Euclidean distance and k=3
-knn_model_k3 = KNeighborsClassifier(n_neighbors=3, metric='euclidean')
-knn_model_k3.fit(X_train, y_train)
+# Function to evaluate k-NN with different distance metrics
+def evaluate_knn(X_train, y_train, X_val, y_val, k, metric):
+    # Create k-NN classifier
+    knn = KNeighborsClassifier(n_neighbors=k, metric=metric)
 
-# Make predictions on the validation set
-y_val_pred_k3 = knn_model_k3.predict(X_val)
+    # Train the model
+    knn.fit(X_train, y_train)
 
-# Evaluate the performance for k=3
-accuracy_k3 = accuracy_score(y_val, y_val_pred_k3)
-print(f'\nAccuracy for k=3: {accuracy_k3}')
-print('Classification Report for k=3:')
-print(classification_report(y_val, y_val_pred_k3))
+    # Make predictions on the validation set
+    y_pred = knn.predict(X_val)
+
+    # Evaluate accuracy
+    accuracy = accuracy_score(y_val, y_pred)
+    print(f'Accuracy for k={k} and metric={metric}: {accuracy:.4f}')
+
+    # Display classification report
+    print(classification_report(y_val, y_pred))
+
+    # Return the accuracy for plotting
+    return accuracy
+
+# Initialize a list to store accuracies for different values of k and metrics
+accuracies_manhattan = []
+accuracies_euclidean = []
+
+# Evaluate for k=1
+accuracy_k1_manhattan = evaluate_knn(X_train, y_train.ravel(), X_val, y_val.ravel(), k=1, metric='manhattan')
+accuracy_k1_euclidean = evaluate_knn(X_train, y_train.ravel(), X_val, y_val.ravel(), k=1, metric='euclidean')
+
+accuracies_manhattan.append(accuracy_k1_manhattan)
+accuracies_euclidean.append(accuracy_k1_euclidean)
+
+# Evaluate for k=3
+accuracy_k3_manhattan = evaluate_knn(X_train, y_train.ravel(), X_val, y_val.ravel(), k=3, metric='manhattan')
+accuracy_k3_euclidean = evaluate_knn(X_train, y_train.ravel(), X_val, y_val.ravel(), k=3, metric='euclidean')
+
+accuracies_manhattan.append(accuracy_k3_manhattan)
+accuracies_euclidean.append(accuracy_k3_euclidean)
+
+# Plot the performance
+k_values = [1, 3]
+plt.bar(np.array(k_values) - 0.2, accuracies_manhattan, width=0.4, label='Manhattan', color='blue')
+plt.bar(np.array(k_values) + 0.2, accuracies_euclidean, width=0.4, label='Euclidean', color='green')
+plt.xlabel('k (Number of Neighbors)')
+plt.ylabel('Accuracy')
+plt.title('k-NN Performance with Different Distance Metrics')
+plt.xticks(k_values)
+plt.legend()
+plt.ylim(0, 1)
+plt.show()
