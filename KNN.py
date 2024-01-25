@@ -80,19 +80,22 @@ for k in k_values:
 
 # Create subplots for Accuracy and Cross-Validation Error
 plt.figure(figsize=(12, 6), facecolor='black')
-
 # Subplot for Accuracy
 plt.subplot(1, 2, 1)
 plt.plot(k_values, accuracies, label='Accuracy', linestyle='-', color='blue', linewidth=2)
 plt.scatter([1, 3], [accuracies[0], accuracies[2]], color='blue', marker='o', s=100)
 for k, acc in zip([1, 3], [accuracies[0], accuracies[2]]):
-    plt.text(k, acc, f'{acc:.2%}', color='white', fontsize=8, ha='left', va='bottom')
+    plt.text(k, acc, f'K={k}: {acc:.2%}', color='white', fontsize=8, ha='left', va='bottom', bbox=dict(facecolor='black', edgecolor='white', boxstyle='round', alpha=0.5))
 plt.title('Accuracy for Different k Values', fontsize=14, color='white', fontweight='bold')
 plt.xlabel('k value', fontsize=12, color='white')
 plt.ylabel('Accuracy', fontsize=12, color='white')
 plt.xticks(color='white', fontsize=10)
 plt.yticks(color='white', fontsize=10)
 plt.grid(True, color='white')
+
+# Add a dashed line connecting points for k=1 and k=3
+plt.plot([1, 3], [accuracies[0], accuracies[2]], linestyle='--', color='white', linewidth=1, marker='o', markersize=8, markeredgecolor='white')
+
 plt.gca().set_facecolor('black')
 plt.legend()
 
@@ -101,13 +104,17 @@ plt.subplot(1, 2, 2)
 plt.plot(k_values, cv_errors, label='Cross-Validation Error', linestyle='-', color='red', linewidth=2)
 plt.scatter([1, 3], [cv_errors[0], cv_errors[2]], color='red', marker='o', s=100)
 for k, cv_err in zip([1, 3], [cv_errors[0], cv_errors[2]]):
-    plt.text(k, cv_err, f'{cv_err:.2%}', color='white', fontsize=8, ha='left', va='top')
+    plt.text(k, cv_err, f'K={k}: {cv_err:.2%}', color='white', fontsize=8, ha='left', va='top', bbox=dict(facecolor='black', edgecolor='white', boxstyle='round', alpha=0.5))
 plt.title('Cross-Validation Error for Different k Values', fontsize=14, color='white', fontweight='bold')
 plt.xlabel('k value', fontsize=12, color='white')
 plt.ylabel('Error', fontsize=12, color='white')
 plt.xticks(color='white', fontsize=10)
 plt.yticks(color='white', fontsize=10)
 plt.grid(True, color='white')
+
+# Add a dashed line connecting points for k=1 and k=3
+plt.plot([1, 3], [cv_errors[0], cv_errors[2]], linestyle='--', color='white', linewidth=1, marker='o', markersize=8, markeredgecolor='white')
+
 plt.gca().set_facecolor('black')
 plt.legend()
 
