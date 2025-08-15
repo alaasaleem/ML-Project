@@ -12,7 +12,7 @@ X = dataFrame[['anxiety_level', 'self_esteem', 'mental_health_history', 'depress
                'study_load', 'teacher_student_relationship', 'future_career_concerns', 
                'social_support', 'peer_pressure', 'extracurricular_activities', 'bullying']]
 
-y = dataFrame['stress_level'].values
+y = dataFrame['stress_level']
 
 # Convert X to a DataFrame and plot histograms for each feature
 X_df = pd.DataFrame(X, columns=X.columns)
@@ -44,21 +44,35 @@ for i, column in enumerate(X_df.columns):
 
     ax.set_title(f'{column.capitalize()}', color='white', fontsize=8)
     ax.set_ylabel('Frequency', color='white', fontsize=8)
-    ax.tick_params(axis='both', colors='white', labelsize=8)
+    ax.set_xlabel(column, color='white', fontsize=8)  # Add x-axis label
+    ax.tick_params(axis='both', colors='white', labelsize=6)  # Adjust label font size
     ax.spines['bottom'].set_color('white')
     ax.spines['top'].set_color('white')
     ax.spines['right'].set_color('white')
     ax.spines['left'].set_color('white')
     ax.set_facecolor('black')
 
-# Add a common legend outside the subplots
-plt.legend(loc='upper left', bbox_to_anchor=(1.3, 2.5), fontsize=8)
+# Create a new figure for both pie chart and heatmap
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), facecolor='black')
 
-# Adjust layout
-plt.tight_layout()
+# Plot pie chart
+class_distribution = y.value_counts()
+percentages = class_distribution / class_distribution.sum() * 100
+labels_with_percentage = [f'{label} ({percentage:.1f}%)' for label, percentage in zip(class_distribution.index, percentages)]
+ax1.pie(class_distribution, colors=sns.color_palette("Set3"), startangle=90, wedgeprops=dict(width=0.3),
+        labels=labels_with_percentage, textprops={'color': 'white'})  # Set text color to white
+ax1.set_title('Stress Level Distribution', color='white', fontsize=12)
 
-# Increase space between y-axis labels and nearby plots
-plt.subplots_adjust(wspace=0.5)
+# Plot correlation matrix with labels
+corr_data = pd.concat([X, pd.Series(y, name='stress_level')], axis=1)
+correlation_matrix = corr_data.corr()
+# Plot the correlation matrix as a heatmap
+heatmap = sns.heatmap(correlation_matrix[['stress_level']], annot=True, cmap='coolwarm', fmt=".2f", linewidths=2, square=False,
+                      cbar_kws={"label": "Correlation"}, annot_kws={"size": 10}, ax=ax2, xticklabels=True, yticklabels=True)
+
+# Set the color of tick labels to white
+heatmap.set_xticklabels(heatmap.get_xticklabels(), color='white', fontsize=8, rotation=45, ha='right')
+heatmap.set_yticklabels(heatmap.get_yticklabels(), color='white', fontsize=8, rotation=0, ha='right')
 
 # Show the plot
 plt.show()
